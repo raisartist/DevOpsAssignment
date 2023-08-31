@@ -12,7 +12,7 @@ print ("Events table created successfully");
 conn.close()
 
 app = Flask(__name__)
-# app.secret_key = "my super secret key for the app" 
+app.secret_key = "my super secret key for the app"
 
 @app.route("/")
 def home():
@@ -39,21 +39,46 @@ def events_database():
 
 @app.route("/delete_customer/<customer_name>", methods = ['POST', 'GET'])
 def delete_customer(customer_name):
-   if request.method == 'POST':
-    try: 
-        with sqlite3.connect("database.db") as connection:
-            current = connection.cursor()
-            current.execute("DELETE FROM customers WHERE name = (?)",(customer_name,) )
-            
-            connection.commit()
-            message = "Customer record successfully deleted"
-    except Exception as error:
-        connection.rollback()
-        message = error
+    if request.method == 'POST':
+        try: 
+            with sqlite3.connect("database.db") as connection:
+                current = connection.cursor()
+                current.execute("DELETE FROM customers WHERE name = (?)",(customer_name,) )
+                
+                connection.commit()
+                message = "Customer record successfully deleted"
+        except Exception as error:
+            connection.rollback()
+            message = error
+        
+        finally:
+            connection.close()
+            return render_template("result.html",message = message)
+
+@app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
+def update_customer(name, dateJoined, location, useCase):
+    return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase)
+
+@app.route("/update_set_customer/<customer_name>", methods = ['POST', 'GET'])
+def update_set_customer(customer_name):
+    if request.method == 'POST':
+        name = request.form['name']
+        dateJoined = request.form['dateJoined']
+        useCase = request.form['useCase']
+        location = request.form['location']
+        try: 
+            with sqlite3.connect("database.db") as connection:
+                current = connection.cursor()
+                current.execute("UPDATE customers SET name = (?), dateJoined = (?), useCase = (?), location = (?) WHERE name = (?)",(name, dateJoined, useCase, location, customer_name) )
+                connection.commit()
+                message = "Customer record successfully updated"
+        except Exception as error:
+            connection.rollback()
+            message = error
       
-    finally:
-        connection.close()
-        return render_template("result.html",message = message)
+        finally:
+            connection.close()
+            return render_template("result.html",message = message)
 
 @app.route("/add_customer", methods = ['POST', 'GET'])
 def add_customer():

@@ -15,7 +15,7 @@
     <div class="jumbotron">
         <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
             <h1 class="display-4">Hello, User!</h1>
-            <p class="lead">Here is our amazing customers database:</p>
+            <p class="lead">Add a new customer:</p>
 
             <form class="form-inline" action = "{{ url_for('add_customer') }}" method = "POST">
                 <div class="form-group mx-sm-3 mb-2">
@@ -32,7 +32,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary mb-4">Add a new customer</button>
             </form>
-
+            <br>
             <table class="table">
                 <thead>
                     <tr>
@@ -41,19 +41,31 @@
                         <th scope="col">Date Joined</th>
                         <th scope="col">Use Case</th>
                         <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows %}
                         <tr>
-                            <td>{{row["name"]}}</td>
-                            <td>{{row["location"]}}</td>
-                            <td>{{row["dateJoined"]}}</td>
-                            <td>{{row["useCase"]}}</td>
+                            <td>
+                                {{row["name"]}}
+                            </td>
+                            <td>
+                                {{row["location"]}}
+                            </td>
+                            <td>
+                                {{row["dateJoined"]}}
+                            </td>
+                            <td>
+                                {{row["useCase"]}}
+                            </td>
                             <td>
                                 <form action="{{ url_for('delete_customer', customer_name = row['name']) }}" method= "POST">
                                     <button type="submit" class="btn btn-danger mb-4">Delete</button>
                                 </form>
+                            </td>
+                            <td>
+                                <a class="btn btn-warning my-2 my-sm-0" href="{{ url_for('update_customer', name = row['name'], dateJoined = row['dateJoined'], location = row['location'], useCase = row['useCase']) }}">Edit</a>
                             </td>
                         </tr>
                     {%endfor%}

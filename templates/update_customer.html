@@ -16,18 +16,22 @@
     </nav>
     <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
         <div class="form-control-lg">
-            <form>
-                <div class="form-group">
-                <label for="exampleInputEmail1">Email address</label>
-                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
-                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            <form class="form-inline" action = "{{ url_for('update_set_customer', customer_name = name) }}" method = "POST">
+
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" class="form-control" id="inputPassword2" name="name" value = "{{name}}" placeholder="{{name}}">
                 </div>
-                <div class="form-group">
-                <label for="exampleInputPassword1">Password</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" class="form-control" id="inputPassword2" name="location" value = "{{location}}" placeholder="{{location}}">
                 </div>
-                <br>
-                <button type="submit" class="btn btn-primary">Log In</button>
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" class="form-control" id="inputPassword2" name="dateJoined" value = "{{dateJoined}}" placeholder="{{dateJoined}}">
+                </div>
+                <div class="form-group mx-sm-3 mb-3">
+                    <input type="text" class="form-control" id="inputPassword2" name="useCase" value = "{{useCase}}" placeholder="{{useCase}}">
+                </div>
+                <button type="submit" class="btn btn-primary mb-4">Edit</button>
+
             </form>
         </div>
     </div>
