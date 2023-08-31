@@ -19,16 +19,60 @@
 
             <form class="form-inline" action = "{{ url_for('add_customer') }}" method = "POST">
                 <div class="form-group mx-sm-3 mb-2">
-                    <input type="text" class="form-control" id="inputPassword2" name="name" placeholder="Customer Name">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="name" placeholder="Customer Name"> -->
+                    {{ form.name.label() }}
+                    {% if form.name.errors %}
+                        {{ form.name() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.name.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.name() }}
+                    {% endif %}
                 </div>
                 <div class="form-group mx-sm-3 mb-2">
-                    <input type="text" class="form-control" id="inputPassword2" name="location" placeholder="Location (London, UK)">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="location" placeholder="Location (London, UK)"> -->
+                    {{ form.location.label() }}
+                    {% if form.location.errors %}
+                        {{ form.location() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.location.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.location() }}
+                    {% endif %}
                 </div>
                 <div class="form-group mx-sm-3 mb-2">
-                    <input type="text" class="form-control" id="inputPassword2" name="dateJoined" placeholder=" Date joined (2022-02-15)">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="dateJoined" placeholder=" Date joined (2022-02-15)"> -->
+                    {{ form.dateJoined.label() }}
+                    {% if form.dateJoined.errors %}
+                        {{ form.dateJoined() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.dateJoined.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.dateJoined() }}
+                    {% endif %}
                 </div>
                 <div class="form-group mx-sm-3 mb-3">
-                    <input type="text" class="form-control" id="inputPassword2" name="useCase" placeholder="Use case (To monitor short videos)">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="useCase" placeholder="Use case (To monitor short videos)"> -->
+                    {{ form.useCase.label() }}
+                    {% if form.useCase.errors %}
+                        {{ form.useCase() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.useCase.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.useCase() }}
+                    {% endif %}
                 </div>
                 <button type="submit" class="btn btn-primary mb-4">Add a new customer</button>
             </form>

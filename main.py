@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import sqlite3
+from forms import new_customer_form
 
 conn = sqlite3.connect('database.db')
 print ("Opened database successfully");
@@ -24,6 +25,7 @@ def login():
 
 @app.route("/customers_database")
 def customers_database():
+    form = new_customer_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
 
@@ -31,7 +33,7 @@ def customers_database():
     current.execute("select * from customers")
 
     rows = current.fetchall(); 
-    return render_template("customers_database.html", rows = rows)
+    return render_template("customers_database.html", rows = rows, form=form)
 
 @app.route("/events_database")
 def events_database():
@@ -49,11 +51,13 @@ def delete_customer(customer_name):
                 message = "Customer record successfully deleted"
         except Exception as error:
             connection.rollback()
-            message = error
+            message = str(error)
         
         finally:
             connection.close()
             return render_template("result.html",message = message)
+            # flash(message)
+            # return redirect(url_for("customers_database"))
 
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
 def update_customer(name, dateJoined, location, useCase):
@@ -74,34 +78,42 @@ def update_set_customer(customer_name):
                 message = "Customer record successfully updated"
         except Exception as error:
             connection.rollback()
-            message = error
+            message = str(error)
       
         finally:
             connection.close()
+            # flash(message)
+            # return redirect(url_for("customers_database"))
             return render_template("result.html",message = message)
 
 @app.route("/add_customer", methods = ['POST', 'GET'])
 def add_customer():
+   form = new_customer_form(request.form)
    if request.method == 'POST':
       try:
-         name = request.form['name']
-         dateJoined = request.form['dateJoined']
-         useCase = request.form['useCase']
-         location = request.form['location']
-         
-         with sqlite3.connect("database.db") as connection:
-            current = connection.cursor()
-            current.execute("INSERT OR IGNORE INTO customers (name,dateJoined,useCase,location) VALUES (?,?,?,?)",(name,dateJoined,useCase,location) )
-            
-            connection.commit()
-            message = "Customer record successfully added"
-      except:
+        #  name = request.form['name']
+        #  dateJoined = request.form['dateJoined']
+        #  useCase = request.form['useCase']
+        #  location = request.form['location']
+        name = form.name.data
+        dateJoined = form.dateJoined.data
+        useCase = form.useCase.data
+        location = form.location.data
+        with sqlite3.connect("database.db") as connection:
+                current = connection.cursor()
+                current.execute("INSERT OR IGNORE INTO customers (name,dateJoined,useCase,location) VALUES (?,?,?,?)",(str(name),str(dateJoined),str(useCase),str(location)) )
+                
+                connection.commit()
+                message = "Customer record successfully added"
+      except Exception as error:
          connection.rollback()
-         message = "Failed to insert a new customer. Please return to the previous page and try again."
+         message = str(error)
       
       finally:
-         connection.close()
-         return render_template("result.html",message = message)
+        connection.close()
+        # flash(message)
+        # return redirect(url_for("customers_database"))
+        return render_template("result.html",message = message)
 
 
 if __name__ == "__main__":
