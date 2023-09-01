@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request
 import sqlite3
-from forms import new_customer_form, DateValidationException
+from forms import customer_form
 
 conn = sqlite3.connect('database.db')
 print ("Opened database successfully");
@@ -25,7 +25,7 @@ def login():
 
 @app.route("/customers_database")
 def customers_database():
-    form = new_customer_form()
+    form = customer_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
 
@@ -49,48 +49,59 @@ def delete_customer(customer_name):
                 
                 connection.commit()
                 message = "Customer record successfully deleted"
+                isError = False
         except Exception as error:
             connection.rollback()
             message = str(error)
+            isError = True
         
         finally:
             connection.close()
-            return render_template("result.html",message = message)
+            return render_template("result.html",message = message, isError = isError)
             # flash(message)
             # return redirect(url_for("customers_database"))
 
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
 def update_customer(name, dateJoined, location, useCase):
-    return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase)
+    form = customer_form()
+    return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase, form = form)
 
 @app.route("/update_set_customer/<customer_name>", methods = ['POST', 'GET'])
 def update_set_customer(customer_name):
-    if request.method == 'POST':
-        name = request.form['name']
-        dateJoined = request.form['dateJoined']
-        useCase = request.form['useCase']
-        location = request.form['location']
-        try: 
-            with sqlite3.connect("database.db") as connection:
-                current = connection.cursor()
-                current.execute("UPDATE customers SET name = (?), dateJoined = (?), useCase = (?), location = (?) WHERE name = (?)",(name, dateJoined, useCase, location, customer_name) )
-                connection.commit()
-                message = "Customer record successfully updated"
-        except Exception as error:
-            connection.rollback()
-            message = str(error)
-      
-        finally:
-            connection.close()
-            # flash(message)
-            # return redirect(url_for("customers_database"))
-            return render_template("result.html",message = message)
+    form = customer_form(request.form)
+    isValid = form.validate_on_submit()
+    if isValid == True:
+        if request.method == 'POST':
+            try:
+                name = form.name.data
+                dateJoined = form.dateJoined.data
+                useCase = form.useCase.data
+                location = form.location.data
+                with sqlite3.connect("database.db") as connection:
+                        current = connection.cursor()
+                        current.execute("UPDATE customers SET name = (?), dateJoined = (?), useCase = (?), location = (?) WHERE name = (?)",(name, dateJoined, useCase, location, customer_name) )
+                        
+                        connection.commit()
+                        message = "Customer record successfully updated"
+                        isError = False
+            except Exception as error:
+                connection.rollback()
+                message = str(error)
+                isError = True
+            
+            finally:
+                connection.close()
+                # flash(message)
+                # return redirect(url_for("customers_database"))
+                return render_template("result.html",message = message, isError = isError)
+    else:
+        return render_template("result.html",message = isValid, isError = True)
 
 @app.route("/add_customer", methods = ['POST', 'GET'])
 def add_customer():
-    form = new_customer_form(request.form)
+    form = customer_form(request.form)
     isValid = form.validate_on_submit()
-    if isValid:
+    if isValid == True:
         if request.method == 'POST':
             try:
                 name = form.name.data
@@ -103,18 +114,19 @@ def add_customer():
                         
                         connection.commit()
                         message = "Customer record successfully added"
+                        isError = False
             except Exception as error:
                 connection.rollback()
                 message = str(error)
+                isError = True
             
             finally:
                 connection.close()
                 # flash(message)
                 # return redirect(url_for("customers_database"))
-                return render_template("result.html",message = message)
+                return render_template("result.html",message = message, isError = isError)
     else:
-        message = "The date must not be in the future."
-        return render_template("result.html",message = message)
+        return render_template("result.html",message = isValid, isError = True)
 
 if __name__ == "__main__":
     app.run(debug=True)

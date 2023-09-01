@@ -17,7 +17,7 @@
             <h1 class="display-4">Hello, User!</h1>
             <p class="lead">Add a new customer:</p>
 
-            <form class="form-inline" action = "{{ url_for('add_customer') }}" method = "POST">
+            <form class="form" action = "{{ url_for('add_customer') }}" method = "POST">
                 <div class="form-group mx-sm-3 mb-2">
                     <!-- <input type="text" class="form-control" id="inputPassword2" name="name" placeholder="Customer Name"> -->
                     {{ form.name.label() }}
