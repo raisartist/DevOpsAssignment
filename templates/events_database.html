@@ -15,7 +15,109 @@
     <div class="jumbotron">
         <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
             <h1 class="display-4">Hello, User!</h1>
-            <p class="lead">Here is our amazing users database:</p>
+            <p class="lead">Add a new event:</p>
+
+            <form class="form" action = "{{ url_for('add_event') }}" method = "POST">
+                <div class="form-group mx-sm-3 mb-2">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="name" placeholder="Customer Name"> -->
+                    {{ form.name.label() }}
+                    {% if form.name.errors %}
+                        {{ form.name() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.name.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.name() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="location" placeholder="Location (London, UK)"> -->
+                    {{ form.location.label() }}
+                    {% if form.location.errors %}
+                        {{ form.location() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.location.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.location() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="dateJoined" placeholder=" Date joined (2022-02-15)"> -->
+                    {{ form.dateStarted.label() }}
+                    {% if form.dateStarted.errors %}
+                        {{ form.dateStarted() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.dateStarted.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.dateStarted() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-3">
+                    <!-- <input type="text" class="form-control" id="inputPassword2" name="useCase" placeholder="Use case (To monitor short videos)"> -->
+                    {{ form.durationMins.label() }}
+                    {% if form.durationMins.errors %}
+                        {{ form.durationMins() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.durationMins.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.durationMins() }}
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary mb-4">Add a new event</button>
+            </form>
+            <br>
+            <p class="lead">Events we have monitored:</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Event Name</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Date Started</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                {{row["name"]}}
+                            </td>
+                            <td>
+                                {{row["location"]}}
+                            </td>
+                            <td>
+                                {{row["dateStarted"]}}
+                            </td>
+                            <td>
+                                {{row["durationMins"]}}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('delete_event', event_name = row['name']) }}" method= "POST">
+                                    <button type="submit" class="btn btn-danger mb-4">Delete</button>
+                                </form>
+                            </td>
+                            <td>
+                                <a class="btn btn-warning my-2 my-sm-0" href="{{ url_for('update_event', name = row['name'], dateStarted = row['dateStarted'], location = row['location'], durationMins = row['durationMins']) }}">Edit</a>
+                            </td>
+                        </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            
         </div>
     </div>
     

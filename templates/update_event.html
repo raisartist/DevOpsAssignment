@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Raya's database app</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home') }}">MyAgileProject</a>
+        <a class="btn btn-outline-secondary my-2 my-sm-0" href="{{ url_for('customers_database') }}">Customers Database</a>
+        <a class="btn btn-outline-secondary my-2 my-sm-0" href="{{ url_for('events_database') }}">Events Database</a>
+    </div>
+    </nav>
+    <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
+        <div class="form-control-lg">
+            <form class="form-inline" action = "{{ url_for('update_set_event', event_name = name) }}" method = "POST">
+                <div class="form-group mx-sm-3 mb-2">
+                    {{form.name.label()}}
+                    <h6>Previous value: {{name}}</h6>
+                    {% if form.name.errors %}
+                        {{ form.name() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.name.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.name() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    {{form.location.label()}}
+                    <h6>Previous value: {{location}}</h6>
+                    {% if form.location.errors %}
+                        {{ form.location() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.location.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.location() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    {{form.dateStarted.label()}}
+                    <h6>Previous value: {{dateStarted}}</h6>
+                    {% if form.dateStarted.errors %}
+                        {{ form.dateStarted() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.dateStarted.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.dateStarted() }}
+                    {% endif %}
+                </div>
+                <div class="form-group mx-sm-3 mb-3">
+                    {{form.durationMins.label()}}
+                    <h6>Previous value: {{durationMins}}</h6>
+                    {% if form.durationMins.errors %}
+                        {{ form.durationMins() }}
+                        <div class="invalid-feedback">
+                        {% for error in form.durationMins.errors %}
+                        <span>* {{ error }}</span>
+                        {% endfor %}
+                        </div>
+                    {%else%}
+                        {{ form.durationMins() }}
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary mb-4">Edit</button>
+
+            </form>
+        </div>
+    </div>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+  </body>
+</html>
