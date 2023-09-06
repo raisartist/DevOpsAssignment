@@ -91,16 +91,16 @@ def logout():
         logout_user()
         message = "Logged out successfully."
         isError = False
-        return render_template("result.html", message = message, isError = isError)
+        return render_template("login_result.html", message = message, isError = isError)
     else:
         message = "You are not logged in."
         isError = True
-        return render_template("result.html", message = message, isError = isError)
+        return render_template("login_result.html", message = message, isError = isError)
 
 @app.route("/login")
 def login():
     if current_user.is_authenticated:
-        return render_template("result.html", message = f"Already logged in as {current_user.username}", isError = False)
+        return render_template("login_result.html", message = f"Already logged in as {current_user.username}", isError = False)
     form = login_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
@@ -160,14 +160,15 @@ def login_or_register():
             connection.close()
             # flash(message)
             # return redirect(url_for("customers_database"))
-            return render_template("result.html", message = message, isError = isError)
+            return render_template("login_result.html", message = message, isError = isError)
     else:
-        return render_template("result.html", message = str(request.method), isError = True)
+        return render_template("login_result.html", message = str(request.method), isError = True)
                     
 
 # Customers
 
 @app.route("/customers_database")
+@login_required
 def customers_database():
     form = customer_form()
     connection = sqlite3.connect("database.db")
@@ -180,6 +181,7 @@ def customers_database():
     return render_template("customers_database.html", rows = rows, form=form)
 
 @app.route("/delete_customer/<customer_name>", methods = ['POST', 'GET'])
+@login_required
 def delete_customer(customer_name):
     if request.method == 'POST':
         try: 
@@ -202,11 +204,13 @@ def delete_customer(customer_name):
             # return redirect(url_for("customers_database"))
 
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
+@login_required
 def update_customer(name, dateJoined, location, useCase):
     form = customer_form()
     return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase, form = form)
 
 @app.route("/update_set_customer/<customer_name>", methods = ['POST', 'GET'])
+@login_required
 def update_set_customer(customer_name):
     form = customer_form(request.form)
     isValid = form.validate_on_submit()
@@ -238,6 +242,7 @@ def update_set_customer(customer_name):
         return render_template("result.html",message = isValid, isError = True)
 
 @app.route("/add_customer", methods = ['POST', 'GET'])
+@login_required
 def add_customer():
     form = customer_form(request.form)
     isValid = form.validate_on_submit()
@@ -271,6 +276,7 @@ def add_customer():
 # Events
 
 @app.route("/events_database")
+@login_required
 def events_database():
     form = event_form()
     connection = sqlite3.connect("database.db")
@@ -283,6 +289,7 @@ def events_database():
     return render_template("events_database.html", rows = rows, form=form)
 
 @app.route("/add_event", methods = ['POST', 'GET'])
+@login_required
 def add_event():
     form = event_form(request.form)
     isValid = form.validate_on_submit()
@@ -313,11 +320,13 @@ def add_event():
         return render_template("result.html",message = isValid, isError = True)
 
 @app.route("/update_event/<name>/<dateStarted>/<location>/<durationMins>")
+@login_required
 def update_event(name, dateStarted, location, durationMins):
     form = event_form()
     return render_template("update_event.html", name = name, dateStarted = dateStarted, location = location, durationMins = durationMins, form = form)
 
 @app.route("/update_set_event/<event_name>", methods = ['POST', 'GET'])
+@login_required
 def update_set_event(event_name):
     form = event_form(request.form)
     isValid = form.validate_on_submit()
@@ -347,8 +356,9 @@ def update_set_event(event_name):
                 return render_template("result.html",message = message, isError = isError)
     else:
         return render_template("result.html",message = isValid, isError = True)
-    
+
 @app.route("/delete_event/<event_name>", methods = ['POST', 'GET'])
+@login_required
 def delete_event(event_name):
     if request.method == 'POST':
         try: 
