@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import (StringField, TextAreaField, DateField, IntegerField)
+from wtforms import (StringField, TextAreaField, DateField, IntegerField, PasswordField, EmailField)
 from wtforms.validators import InputRequired, Length
 import datetime
+import sqlite3
 
 def containsOnlyLetters(field):
      if field.isalpha():
@@ -73,4 +74,20 @@ class event_form(FlaskForm):
             if locationValidated != True: message += locationValidated
             if durationValidated != True: message += durationValidated
             return message
+        
+
+class login_form(FlaskForm):
+    username = StringField('Username', validators=[InputRequired(), Length(min=3, max=20)], render_kw={"placeholder": "myUsername", "class":"form-control"})
+    email = EmailField('Email', validators=[InputRequired()], render_kw={"placeholder": "myemail@gmail.com", "class":"form-control"})
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class":"form-control"})
+
+    def email_registered(self):
+        conn = sqlite3.connect('database.db')
+        curs = conn.cursor()
+        curs.execute("SELECT email FROM users where email = (?)",[self.email.data])
+        valemail = curs.fetchone()
+        if valemail is None:
+            return False
+        else:
+            return True
         
