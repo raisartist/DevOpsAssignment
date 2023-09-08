@@ -19,7 +19,7 @@
             <form class="form-inline" action = "{{ url_for('update_set_event', event_name = name) }}" method = "POST">
                 <div class="form-group mx-sm-3 mb-2">
                     {{form.name.label()}}
-                    <h6>Previous value: {{name}}</h6>
+                    <!-- <h6>Previous value: {{name}}</h6> -->
                     {% if form.name.errors %}
                         {{ form.name() }}
                         <div class="invalid-feedback">
@@ -33,7 +33,7 @@
                 </div>
                 <div class="form-group mx-sm-3 mb-2">
                     {{form.location.label()}}
-                    <h6>Previous value: {{location}}</h6>
+                    <!-- <h6>Previous value: {{location}}</h6> -->
                     {% if form.location.errors %}
                         {{ form.location() }}
                         <div class="invalid-feedback">
@@ -47,7 +47,7 @@
                 </div>
                 <div class="form-group mx-sm-3 mb-2">
                     {{form.dateStarted.label()}}
-                    <h6>Previous value: {{dateStarted}}</h6>
+                    <!-- <h6>Previous value: {{dateStarted}}</h6> -->
                     {% if form.dateStarted.errors %}
                         {{ form.dateStarted() }}
                         <div class="invalid-feedback">
@@ -61,7 +61,7 @@
                 </div>
                 <div class="form-group mx-sm-3 mb-3">
                     {{form.durationMins.label()}}
-                    <h6>Previous value: {{durationMins}}</h6>
+                    <!-- <h6>Previous value: {{durationMins}}</h6> -->
                     {% if form.durationMins.errors %}
                         {{ form.durationMins() }}
                         <div class="invalid-feedback">

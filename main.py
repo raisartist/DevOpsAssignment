@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request
 import sqlite3
-from forms import customer_form, event_form, login_form
+from forms import create_customer_form, create_event_form, login_form
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 
 login_manager = LoginManager()
 bcrypt = Bcrypt()
@@ -170,7 +171,7 @@ def login_or_register():
 @app.route("/customers_database")
 @login_required
 def customers_database():
-    form = customer_form()
+    form = create_customer_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
     current = connection.cursor()
@@ -208,13 +209,13 @@ def delete_customer(customer_name):
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
 @login_required
 def update_customer(name, dateJoined, location, useCase):
-    form = customer_form()
+    form = create_customer_form(name, datetime.strptime(dateJoined,'%Y-%m-%d'), location, useCase)
     return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase, form = form)
 
 @app.route("/update_set_customer/<customer_name>", methods = ['POST', 'GET'])
 @login_required
 def update_set_customer(customer_name):
-    form = customer_form(request.form)
+    form = create_customer_form(request.form)
     isValid = form.validate_on_submit()
     if isValid == True:
         if request.method == 'POST':
@@ -246,7 +247,7 @@ def update_set_customer(customer_name):
 @app.route("/add_customer", methods = ['POST', 'GET'])
 @login_required
 def add_customer():
-    form = customer_form(request.form)
+    form = create_customer_form(request.form)
     isValid = form.validate_on_submit()
     if isValid == True:
         if request.method == 'POST':
@@ -280,7 +281,7 @@ def add_customer():
 @app.route("/events_database")
 @login_required
 def events_database():
-    form = event_form()
+    form = create_event_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
     current = connection.cursor()
@@ -295,7 +296,7 @@ def events_database():
 @app.route("/add_event", methods = ['POST', 'GET'])
 @login_required
 def add_event():
-    form = event_form(request.form)
+    form = create_event_form(request.form)
     isValid = form.validate_on_submit()
     currentUser = current_user.username
     if isValid == True:
@@ -327,13 +328,13 @@ def add_event():
 @app.route("/update_event/<name>/<dateStarted>/<location>/<durationMins>")
 @login_required
 def update_event(name, dateStarted, location, durationMins):
-    form = event_form()
+    form = create_event_form(name, location, datetime.strptime(dateStarted,'%Y-%m-%d'), durationMins)
     return render_template("update_event.html", name = name, dateStarted = dateStarted, location = location, durationMins = durationMins, form = form)
 
 @app.route("/update_set_event/<event_name>", methods = ['POST', 'GET'])
 @login_required
 def update_set_event(event_name):
-    form = event_form(request.form)
+    form = create_event_form(request.form)
     isValid = form.validate_on_submit()
     if isValid == True:
         if request.method == 'POST':
