@@ -10,11 +10,14 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
         <a class="navbar-brand" href="{{ url_for('home') }}">MyAgileProject</a>
+        {% if isAuthenticated%}
+        <a class="btn btn-outline-secondary my-2 my-sm-0" href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
     </div>
     </nav>
     <div class="jumbotron">
         <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
-            <h1 class="display-4">Hello, User!</h1>
+            <h1 class="display-4">Events monitored by VQA</h1>
             <p class="lead">Add a new event:</p>
 
             <form class="form" action = "{{ url_for('add_event') }}" method = "POST">
@@ -81,6 +84,7 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th scope="col">Author</th>
                         <th scope="col">Event Name</th>
                         <th scope="col">Location</th>
                         <th scope="col">Date Started</th>
@@ -93,6 +97,9 @@
                     {% for row in rows %}
                         <tr>
                             <td>
+                                {{row["author"]}}
+                            </td>
+                            <td>
                                 {{row["name"]}}
                             </td>
                             <td>
@@ -104,6 +111,7 @@
                             <td>
                                 {{row["durationMins"]}}
                             </td>
+                            {% if row["author"] == currentUser or isAdmin == "True" %}
                             <td>
                                 <form action="{{ url_for('delete_event', event_name = row['name']) }}" method= "POST">
                                     <button type="submit" class="btn btn-danger mb-4">Delete</button>
@@ -112,6 +120,7 @@
                             <td>
                                 <a class="btn btn-warning my-2 my-sm-0" href="{{ url_for('update_event', name = row['name'], dateStarted = row['dateStarted'], location = row['location'], durationMins = row['durationMins']) }}">Edit</a>
                             </td>
+                            {% endif %}
                         </tr>
                     {%endfor%}
                 </tbody>

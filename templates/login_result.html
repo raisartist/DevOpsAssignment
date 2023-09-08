@@ -17,15 +17,14 @@
       <div class="container-md bg-danger-subtle border border-danger rounded-3 text-center position-absolute top-50 start-50 translate-middle">
         <h1 class="display-4">{{message}}</h1>
         <p class="lead">
-            <a class="btn btn-outline-danger btn-lg" href="{{ url_for('home') }}" role="button">Back</a>
+            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('home') }}" role="button">Back</a>
         </p>
       </div>
       {% else %}
       <div class="container-md bg-success-subtle border border-success rounded-3 text-center position-absolute top-50 start-50 translate-middle">
         <h1 class="display-4">{{message}}</h1>
         <p class="lead">
-            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('customers_database') }}" role="button">See Customers Database</a>
-            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('events_database') }}" role="button">See Events Database</a>
+            <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('home') }}" role="button">Back</a>
         </p>
       </div>
       {% endif %}

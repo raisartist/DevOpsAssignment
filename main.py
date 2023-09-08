@@ -14,8 +14,8 @@ def addAdmin():
             current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",("admin","admin@agile.com",bcrypt.generate_password_hash("qwerty123").decode("utf-8"),"True"))
             connection.commit()
         print("Added an admin to users")
-    except Exception as e:
-        print(f"Failed to add Admin: {e}")
+    except Exception as error:
+        print(f"Failed to add Admin: {error}")
     finally:
         connection.close()
 
@@ -28,9 +28,9 @@ print ("Opened database successfully")
 # print("Dropped customers")
 # conn.execute('DROP TABLE IF EXISTS users')
 # print("Dropped users")
-conn.execute('CREATE TABLE IF NOT EXISTS customers (name VARCHAR PRIMARY KEY UNIQUE NOT NULL, dateJoined TEXT NOT NULL, useCase TEXT NOT NULL, location TEXT NOT NULL)')
+conn.execute('CREATE TABLE IF NOT EXISTS customers (name VARCHAR PRIMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, dateJoined TEXT NOT NULL, useCase TEXT NOT NULL, location TEXT NOT NULL)')
 print ("Customers table created successfully");
-conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRUMARY KEY UNIQUE NOT NULL, location TEXT NOT NULL, dateStarted TEXT NOT NULL, durationMins INTEGER NOT NULL)')
+conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRUMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, location TEXT NOT NULL, dateStarted TEXT NOT NULL, durationMins INTEGER NOT NULL)')
 print ("Events table created successfully");
 conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, isAdmin VARCHAR NOT NULL)')
 print ("Users table created successfully");
@@ -66,9 +66,6 @@ class User(UserMixin):
 @login_manager.user_loader
 def load_user(id):
     try: 
-        print("*inside load user*")
-        print(f"id: {id}")
-
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM users WHERE id = (?)",[id])
@@ -83,7 +80,10 @@ def load_user(id):
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    username = ""
+    if current_user.is_authenticated:
+        username = current_user.username
+    return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = username)
 
 @app.route("/logout")
 def logout():
@@ -115,13 +115,13 @@ def login():
 def login_or_register():
     form = login_form(request.form)
     isRegistered = form.email_registered()
+    print("IsRegistered from login or register function:", isRegistered)
     if request.method == 'POST':
         try:
             username = form.username.data
             email = form.email.data
             password = form.password.data
             passwordHash = bcrypt.generate_password_hash(password).decode("utf-8")
-            isAdmin = False
             if isRegistered == True:
                 with sqlite3.connect("database.db") as connection:
                     current = connection.cursor()
@@ -131,23 +131,23 @@ def login_or_register():
                     try:
                         user = load_user(userList[0])
                         print(f"user: {user}")
-                        isValidPass = bcrypt.check_password_hash(user.password, password)
-                        if email == user.email and isValidPass:
+                        isValidPassword = bcrypt.check_password_hash(user.password, password)
+                        if email == user.email and isValidPassword:
                             login_user(user, remember=True)
                             message = f"Logged in successfully - Welcome back, {user.username}!"
                             isError = False
                         else:
-                            print(f"email: {email}, userEmail: {user.email}, pas: {isValidPass}")
+                            print(f"email: {email}, userEmail: {user.email}, pas: {isValidPassword}")
                             message = "Login unsiccessful: invalid username or password. "
                             isError = True
-                    except Exception as e:
+                    except Exception as error:
                         connection.rollback()
-                        message = e
+                        message = error
                         isError = True
             else:
                 with sqlite3.connect("database.db") as connection:
                     current = connection.cursor()
-                    current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(isAdmin)) )
+                    current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
                     connection.commit()
                     message = f"New user {username} is successfully registered."
                     isError = False
@@ -173,12 +173,14 @@ def customers_database():
     form = customer_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
-
     current = connection.cursor()
-    current.execute("select * from customers")
+    currentUser = current_user.username
+    isAdmin = current_user.isAdmin
 
+    current.execute("select * from customers")
     rows = current.fetchall(); 
-    return render_template("customers_database.html", rows = rows, form=form)
+
+    return render_template("customers_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin)
 
 @app.route("/delete_customer/<customer_name>", methods = ['POST', 'GET'])
 @login_required
@@ -253,13 +255,13 @@ def add_customer():
                 dateJoined = form.dateJoined.data
                 useCase = form.useCase.data
                 location = form.location.data
+                currentUser = current_user.username
                 with sqlite3.connect("database.db") as connection:
-                        current = connection.cursor()
-                        current.execute("INSERT OR IGNORE INTO customers (name,dateJoined,useCase,location) VALUES (?,?,?,?)",(str(name),str(dateJoined),str(useCase),str(location)) )
-                        
-                        connection.commit()
-                        message = "Customer record successfully added"
-                        isError = False
+                    current = connection.cursor()
+                    current.execute("INSERT OR IGNORE INTO customers (name,author,dateJoined,useCase,location) VALUES (?,?,?,?,?)",(str(name),str(currentUser),str(dateJoined),str(useCase),str(location)))
+                    connection.commit()
+                    message = "Customer record successfully added"
+                    isError = False
             except Exception as error:
                 connection.rollback()
                 message = str(error)
@@ -281,18 +283,21 @@ def events_database():
     form = event_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
-
     current = connection.cursor()
-    current.execute("select * from events")
+    currentUser = current_user.username
+    isAdmin = current_user.isAdmin
 
-    rows = current.fetchall(); 
-    return render_template("events_database.html", rows = rows, form=form)
+    current.execute("select * from events")
+    rows = current.fetchall();
+
+    return render_template("events_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin)
 
 @app.route("/add_event", methods = ['POST', 'GET'])
 @login_required
 def add_event():
     form = event_form(request.form)
     isValid = form.validate_on_submit()
+    currentUser = current_user.username
     if isValid == True:
         if request.method == 'POST':
             try:
@@ -301,11 +306,11 @@ def add_event():
                 durationMins = form.durationMins.data
                 location = form.location.data
                 with sqlite3.connect("database.db") as connection:
-                        current = connection.cursor()
-                        current.execute("INSERT OR IGNORE INTO events (name,dateStarted,durationMins,location) VALUES (?,?,?,?)",(str(name),str(dateStarted),str(durationMins),str(location)) )
-                        connection.commit()
-                        message = "Event record successfully added"
-                        isError = False
+                    current = connection.cursor()
+                    current.execute("INSERT OR IGNORE INTO events (name,author,dateStarted,durationMins,location) VALUES (?,?,?,?,?)",(str(name),str(currentUser),str(dateStarted),str(durationMins),str(location)) )
+                    connection.commit()
+                    message = "Event record successfully added"
+                    isError = False
             except Exception as error:
                 connection.rollback()
                 message = str(error)

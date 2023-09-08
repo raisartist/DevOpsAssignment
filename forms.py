@@ -86,6 +86,7 @@ class login_form(FlaskForm):
         curs = conn.cursor()
         curs.execute("SELECT email FROM users where email = (?)",[self.email.data])
         valemail = curs.fetchone()
+        print("ValEmail from validation func: ", valemail)
         if valemail is None:
             return False
         else:
