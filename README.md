@@ -3,6 +3,11 @@ A web application for the QA L5 Software Engineering &amp; Agile module assignme
 
 ### Draft assignment notes
 
+#### Hosted app link:
+
+`http://pastukhw.pythonanywhere.com/`
+
+
 admin account details: 
 
 username : admin,
