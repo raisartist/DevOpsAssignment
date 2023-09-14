@@ -230,9 +230,7 @@ def update_set_customer(customer_name):
                 connection.close()
                 flash(message)
                 return redirect(url_for("customers_database"))
-                # return render_template("result.html",message = message, isError = isError)
     else:
-        # return render_template("result.html",message = isValid, isError = True)
         flash(isValid)
         return redirect(url_for("customers_database"))
 
@@ -262,11 +260,9 @@ def add_customer():
                 connection.close()
                 flash(message)
                 return redirect(url_for("customers_database"))
-                # return render_template("result.html",message = message, isError = isError)
     else:
         flash(f"{isValid}")
         return redirect(url_for("customers_database"))
-        # return render_template("result.html",message = isValid, isError = True)
 
 # Events
 
@@ -303,19 +299,17 @@ def add_event():
                     current.execute("INSERT OR IGNORE INTO events (name,author,dateStarted,durationMins,location) VALUES (?,?,?,?,?)",(str(name),str(currentUser),str(dateStarted),str(durationMins),str(location)) )
                     connection.commit()
                     message = "Event record successfully added"
-                    isError = False
             except Exception as error:
                 connection.rollback()
-                message = str(error)
-                isError = True
+                message = f"Failed to add an event record: {str(error)}"
             
             finally:
                 connection.close()
-                # flash(message)
-                # return redirect(url_for("customers_database"))
-                return render_template("result.html",message = message, isError = isError)
+                flash(message)
+                return redirect(url_for("events_database"))
     else:
-        return render_template("result.html",message = isValid, isError = True)
+        flash(isValid)
+        return redirect(url_for("events_database"))
 
 @app.route("/update_event/<name>/<dateStarted>/<location>/<durationMins>")
 @login_required
@@ -341,19 +335,17 @@ def update_set_event(event_name):
                         
                         connection.commit()
                         message = "Event record successfully updated"
-                        isError = False
             except Exception as error:
                 connection.rollback()
-                message = str(error)
-                isError = True
+                message = f"Failed to update an event record: {str(error)}"
             
             finally:
                 connection.close()
-                # flash(message)
-                # return redirect(url_for("customers_database"))
-                return render_template("result.html",message = message, isError = isError)
+                flash(message)
+                return redirect(url_for("events_database"))
     else:
-        return render_template("result.html",message = isValid, isError = True)
+        flash(isValid)
+        return redirect(url_for("events_database"))
 
 @app.route("/delete_event/<event_name>", methods = ['POST', 'GET'])
 @login_required
@@ -366,17 +358,14 @@ def delete_event(event_name):
                 
                 connection.commit()
                 message = "Event record successfully deleted"
-                isError = False
         except Exception as error:
             connection.rollback()
-            message = str(error)
-            isError = True
+            message = f"Failed to delete an event record: {str(error)}"
         
         finally:
             connection.close()
-            return render_template("result.html",message = message, isError = isError)
-            # flash(message)
-            # return redirect(url_for("customers_database"))
+            flash(message)
+            return redirect(url_for("events_database"))
     
 if __name__ == "__main__":
     app.run(debug=True)
