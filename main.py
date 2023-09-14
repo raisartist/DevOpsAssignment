@@ -189,17 +189,14 @@ def delete_customer(customer_name):
                 
                 connection.commit()
                 message = "Customer record successfully deleted"
-                isError = False
         except Exception as error:
             connection.rollback()
-            message = str(error)
-            isError = True
+            message = "Failed to delete a record. Please try again later."
         
         finally:
             connection.close()
-            return render_template("result.html",message = message, isError = isError)
-            # flash(message)
-            # return redirect(url_for("customers_database"))
+            flash(message)
+            return redirect(url_for("customers_database"))
 
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
 @login_required
@@ -224,20 +221,20 @@ def update_set_customer(customer_name):
                         current.execute("UPDATE customers SET name = (?), dateJoined = (?), useCase = (?), location = (?) WHERE name = (?)",(name, dateJoined, useCase, location, customer_name) )
                         
                         connection.commit()
-                        message = "Customer record successfully updated"
-                        isError = False
+                        message = "Customer record successfully updated."
             except Exception as error:
                 connection.rollback()
-                message = str(error)
-                isError = True
+                message = f"Failed to update a record: {str(error)}"
             
             finally:
                 connection.close()
-                # flash(message)
-                # return redirect(url_for("customers_database"))
-                return render_template("result.html",message = message, isError = isError)
+                flash(message)
+                return redirect(url_for("customers_database"))
+                # return render_template("result.html",message = message, isError = isError)
     else:
-        return render_template("result.html",message = isValid, isError = True)
+        # return render_template("result.html",message = isValid, isError = True)
+        flash(isValid)
+        return redirect(url_for("customers_database"))
 
 @app.route("/add_customer", methods = ['POST', 'GET'])
 @login_required
@@ -257,19 +254,19 @@ def add_customer():
                     current.execute("INSERT OR IGNORE INTO customers (name,author,dateJoined,useCase,location) VALUES (?,?,?,?,?)",(str(name),str(currentUser),str(dateJoined),str(useCase),str(location)))
                     connection.commit()
                     message = "Customer record successfully added"
-                    isError = False
             except Exception as error:
                 connection.rollback()
-                message = str(error)
-                isError = True
+                message = f"Failed to add a customer record: {str(error)}"
             
             finally:
                 connection.close()
-                # flash(message)
-                # return redirect(url_for("customers_database"))
-                return render_template("result.html",message = message, isError = isError)
+                flash(message)
+                return redirect(url_for("customers_database"))
+                # return render_template("result.html",message = message, isError = isError)
     else:
-        return render_template("result.html",message = isValid, isError = True)
+        flash(f"{isValid}")
+        return redirect(url_for("customers_database"))
+        # return render_template("result.html",message = isValid, isError = True)
 
 # Events
 
