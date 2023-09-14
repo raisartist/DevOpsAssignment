@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, url_for, redirect
 import sqlite3
 from forms import create_customer_form, create_event_form, login_form
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
@@ -23,12 +23,15 @@ def addAdmin():
 conn = sqlite3.connect('database.db')
 print ("Opened database successfully")
 
+# Uncomment the block below to refresh the tables:
+
 # conn.execute('DROP TABLE IF EXISTS events')
 # print("Dropped events")
 # conn.execute('DROP TABLE IF EXISTS customers')
 # print("Dropped customers")
 # conn.execute('DROP TABLE IF EXISTS users')
 # print("Dropped users")
+
 conn.execute('CREATE TABLE IF NOT EXISTS customers (name VARCHAR PRIMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, dateJoined TEXT NOT NULL, useCase TEXT NOT NULL, location TEXT NOT NULL)')
 print ("Customers table created successfully");
 conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRUMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, location TEXT NOT NULL, dateStarted TEXT NOT NULL, durationMins INTEGER NOT NULL)')
@@ -90,18 +93,17 @@ def home():
 def logout():
     if current_user.is_authenticated:
         logout_user()
-        message = "Logged out successfully."
-        isError = False
-        return render_template("login_result.html", message = message, isError = isError)
+        flash("Logged out successfully.")
+        return redirect(url_for("home"))
     else:
-        message = "You are not logged in."
-        isError = True
-        return render_template("login_result.html", message = message, isError = isError)
+        flash("You are not logged in.")
+        return redirect(url_for("home"))
 
 @app.route("/login")
 def login():
     if current_user.is_authenticated:
-        return render_template("login_result.html", message = f"Already logged in as {current_user.username}", isError = False)
+        flash(f"Already logged in as {current_user.username}", category = "info")
+        return redirect(url_for("home"))
     form = login_form()
     connection = sqlite3.connect("database.db")
     connection.row_factory = sqlite3.Row
@@ -116,7 +118,6 @@ def login():
 def login_or_register():
     form = login_form(request.form)
     isRegistered = form.email_registered()
-    print("IsRegistered from login or register function:", isRegistered)
     if request.method == 'POST':
         try:
             username = form.username.data
@@ -128,42 +129,36 @@ def login_or_register():
                     current = connection.cursor()
                     current.execute("SELECT * from users where username = (?)",[username])
                     userList = list(current.fetchone())
-                    print(f"userlist: {userList}")
                     try:
                         user = load_user(userList[0])
-                        print(f"user: {user}")
                         isValidPassword = bcrypt.check_password_hash(user.password, password)
                         if email == user.email and isValidPassword:
                             login_user(user, remember=True)
                             message = f"Logged in successfully - Welcome back, {user.username}!"
-                            isError = False
                         else:
                             print(f"email: {email}, userEmail: {user.email}, pas: {isValidPassword}")
-                            message = "Login unsiccessful: invalid username or password. "
-                            isError = True
+                            message = "Login unsuccessful: invalid username or password."
                     except Exception as error:
                         connection.rollback()
-                        message = error
-                        isError = True
+                        message = f"Unexpected error line 143: {error}"
+
             else:
                 with sqlite3.connect("database.db") as connection:
                     current = connection.cursor()
                     current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
                     connection.commit()
-                    message = f"New user {username} is successfully registered."
-                    isError = False
+                    message = (f"New user {username} is successfully registered.")
         except Exception as error:
             connection.rollback()
-            message = str(error)
-            isError = True
+            message = (f"email or username already exist. Please try other credentials or check your entries")
         
         finally:
             connection.close()
-            # flash(message)
-            # return redirect(url_for("customers_database"))
-            return render_template("login_result.html", message = message, isError = isError)
+            flash(message)
+            return redirect(url_for("home"))
+            # return render_template("login_result.html", message = message, isError = isError)
     else:
-        return render_template("login_result.html", message = str(request.method), isError = True)
+        return redirect(url_for("home"))
                     
 
 # Customers

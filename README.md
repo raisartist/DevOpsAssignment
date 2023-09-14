@@ -20,8 +20,8 @@ username: raya
 email: raya@email.com
 password: qwertyuiop
 
-username: bob
-email: bob@email.com
+username: ben
+email: ben@email.com
 password: qwertyuiop
 
 please note that the use table that can be found below the login form is for testing purposes and will be removed. 
