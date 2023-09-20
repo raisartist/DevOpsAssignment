@@ -13,7 +13,7 @@
       <div class="container-fluid">
         <a class="navbar-brand" href="{{ url_for('home') }}">MyAgileProject</a>
         {% if isAuthenticated%}
-        <a class="btn btn-outline-secondary my-2 my-sm-0" href="{{ url_for('logout') }}">Logout</a>
+        <a class="btn btn-outline-secondary my-2 my-sm-0" href="{{ url_for('logout') }}" onclick="if (! window.confirm('Are you sure you want to log out?')){return false}">Logout</a>
         {% endif %}
     </div>
     </nav>

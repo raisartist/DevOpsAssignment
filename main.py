@@ -73,7 +73,6 @@ def load_user(id):
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM users WHERE id = (?)",[id])
-        # cursor.execute("select * from users")
         result = cursor.fetchone()
         if result is None:
             return None
@@ -176,7 +175,7 @@ def customers_database():
     current.execute("select * from customers")
     rows = current.fetchall(); 
 
-    return render_template("customers_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin)
+    return render_template("customers_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin, isAuthenticated = current_user.is_authenticated)
 
 @app.route("/delete_customer/<customer_name>", methods = ['POST', 'GET'])
 @login_required
@@ -279,7 +278,7 @@ def events_database():
     current.execute("select * from events")
     rows = current.fetchall();
 
-    return render_template("events_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin)
+    return render_template("events_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin, isAuthenticated = current_user.is_authenticated)
 
 @app.route("/add_event", methods = ['POST', 'GET'])
 @login_required
