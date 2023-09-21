@@ -12,7 +12,7 @@ def addAdmin():
     try:
         with sqlite3.connect("database.db") as connection:
             current = connection.cursor()
-            current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",("admin","admin@agile.com",bcrypt.generate_password_hash("qwerty123").decode("utf-8"),"True"))
+            current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",("admin","admin@agile.com",bcrypt.generate_password_hash("Qwerty123@").decode("utf-8"),"True"))
             connection.commit()
         print("Added an admin to users")
     except Exception as error:
@@ -42,11 +42,16 @@ conn.close()
 
 addAdmin()
 
-app = Flask(__name__)
-app.secret_key = "my super secret key for the app"
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = "my super secret key for the app"
 
-login_manager.init_app(app)
-bcrypt.init_app(app)
+    login_manager.init_app(app)
+    bcrypt.init_app(app)
+
+    return app
+
+app = create_app()
 
 class User(UserMixin):
     def __init__(self, id, username, email, password, isAdmin = False):
@@ -116,47 +121,51 @@ def login():
 @app.route("/login_or_register", methods = ['POST', 'GET'])
 def login_or_register():
     form = login_form(request.form)
+    isValid = form.validate_on_submit()
     isRegistered = form.email_registered()
-    if request.method == 'POST':
-        try:
-            username = form.username.data
-            email = form.email.data
-            password = form.password.data
-            passwordHash = bcrypt.generate_password_hash(password).decode("utf-8")
-            if isRegistered == True:
-                with sqlite3.connect("database.db") as connection:
-                    current = connection.cursor()
-                    current.execute("SELECT * from users where username = (?)",[username])
-                    userList = list(current.fetchone())
-                    try:
-                        user = load_user(userList[0])
-                        isValidPassword = bcrypt.check_password_hash(user.password, password)
-                        if email == user.email and isValidPassword:
-                            login_user(user, remember=True)
-                            message = f"Logged in successfully - Welcome back, {user.username}!"
-                        else:
-                            print(f"email: {email}, userEmail: {user.email}, pas: {isValidPassword}")
-                            message = "Login unsuccessful: invalid username or password."
-                    except Exception as error:
-                        connection.rollback()
-                        message = f"Unexpected error line 143: {error}"
+    if isValid == True:
+        if request.method == 'POST':
+            try:
+                username = form.username.data
+                email = form.email.data
+                password = form.password.data
+                passwordHash = bcrypt.generate_password_hash(password).decode("utf-8")
+                if isRegistered == True:
+                    with sqlite3.connect("database.db") as connection:
+                        current = connection.cursor()
+                        current.execute("SELECT * from users where username = (?)",[username])
+                        userList = list(current.fetchone())
+                        try:
+                            user = load_user(userList[0])
+                            isValidPassword = bcrypt.check_password_hash(user.password, password)
+                            if email == user.email and isValidPassword:
+                                login_user(user, remember=True)
+                                message = f"Logged in successfully - Welcome back, {user.username}!"
+                            else:
+                                print(f"email: {email}, userEmail: {user.email}, pas: {isValidPassword}")
+                                message = "Login unsuccessful: invalid username or password."
+                        except Exception as error:
+                            connection.rollback()
+                            message = f"Unexpected error line 143: {error}"
 
-            else:
-                with sqlite3.connect("database.db") as connection:
-                    current = connection.cursor()
-                    current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
-                    connection.commit()
-                    message = (f"New user {username} is successfully registered.")
-        except Exception as error:
-            connection.rollback()
-            message = (f"email or username already exist. Please try other credentials or check your entries")
-        
-        finally:
-            connection.close()
-            flash(message)
+                else:
+                    with sqlite3.connect("database.db") as connection:
+                        current = connection.cursor()
+                        current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
+                        connection.commit()
+                        message = (f"New user {username} is successfully registered.")
+            except Exception as error:
+                connection.rollback()
+                message = (f"email or username already exist. Please try other credentials or check your entries")
+            
+            finally:
+                connection.close()
+                flash(message)
+                return redirect(url_for("home"))
+        else:
             return redirect(url_for("home"))
-            # return render_template("login_result.html", message = message, isError = isError)
     else:
+        flash(f"{isValid}")
         return redirect(url_for("home"))
                     
 

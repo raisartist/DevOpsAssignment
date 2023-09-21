@@ -3,24 +3,49 @@ from wtforms import (StringField, TextAreaField, DateField, IntegerField, Passwo
 from wtforms.validators import InputRequired, Length
 import datetime
 import sqlite3
+import re
 
 def containsOnlyLetters(field):
      if field.isalpha():
          return True
      else:
-         return f"\n {field} must only contain letters."
+         return f" {field} must only contain letters. "
 
 def dateIsInThePast(field):
     if field <= datetime.date.today():
         return True
     else:
-        return "\n Date must be in the past."
+        return " Date must be in the past."
     
 def integerIsValid(field:int, min:int, max: int):
     if field >= min and field <=max:
         return True
     else:
-        return f"\n Duration must be between {min} and {max} mins."
+        return f" Duration must be between {min} and {max} mins. "
+    
+def passwordIsValid(field:str):
+    flag = True
+    while True:
+        if not re.search("[a-z]", field):
+            flag = False
+            break
+        elif not re.search("[A-Z]", field):
+            flag = False
+            break
+        elif not re.search("[0-9]", field):
+            flag = False
+            break
+        elif not re.search("[_@$!]" , field):
+            flag = False
+            break
+        elif re.search("\s" , field):
+            flag = False
+            break
+        else:
+            return flag
+    
+    if flag == False:
+        return f" Invalid password: password must be 8-20 characters long with no spaces and include at least one lower case letter, one upper case letter, one digit and one special character ('_', '@', '$', '!'). "
 
 def create_customer_form(
     nameValue: str = '',
@@ -98,6 +123,21 @@ class login_form(FlaskForm):
     email = EmailField('Email', validators=[InputRequired()], render_kw={"placeholder": "myemail@gmail.com", "class":"form-control"})
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class":"form-control"})
 
+    def validate_on_submit(self):
+        usernameValidated = containsOnlyLetters(self.username.data)
+        passwordValidated = passwordIsValid(self.password.data)
+        if (
+            usernameValidated == True
+            and passwordValidated == True
+        ):
+            return True
+        else:
+            message = f"Input invalid:"
+            if usernameValidated != True: message += usernameValidated
+            if passwordValidated != True: message += passwordValidated
+            
+            return message
+            
     def email_registered(self):
         conn = sqlite3.connect('database.db')
         curs = conn.cursor()
