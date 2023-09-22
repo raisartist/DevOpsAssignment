@@ -23,7 +23,7 @@ def addAdmin():
 conn = sqlite3.connect('database.db')
 print ("Opened database successfully")
 
-# Uncomment the block below to refresh the tables:
+# Uncomment the block below to clean the tables:
 
 # conn.execute('DROP TABLE IF EXISTS events')
 # print("Dropped events")

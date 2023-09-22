@@ -1,27 +1,27 @@
 # QAAgileAssignment
-A web application for the QA L5 Software Engineering &amp; Agile module assignment. 
+A web application for the QA L5 Software Engineering &amp; Agile module assignment prepared by Raisa Pastukhova. 
 
-### Draft assignment notes
-
-#### Hosted app link:
+### Hosted app link:
 
 `http://pastukhw.pythonanywhere.com/`
 
 
-admin account details: 
+### Testing
 
-username : admin,
-email: admin@agile.com,
-password: qwerty123
-
-regilar accounts details: 
-
-username: raya
-email: raya@email.com
-password: qwertyuiop
-
-username: ben
-email: ben@email.com
-password: qwertyuiop
-
-please note that the use table that can be found below the login form is for testing purposes and will be removed. 
+To test the authorisation functionality of the application, the provided admin user details may be used as it is not possible to register as an admin user. Details of existung regular users are also provided below.
+> 
+**Admin account details:** 
+> 
+- username : admin
+- email: admin@agile.com
+- password: Qwerty123@
+> 
+**Regilar accounts details:**
+> 
+- username: raya
+- email: raya@email.com
+- password: Qwerty1!
+> 
+- username: bob
+- email: bob@email.com
+- password: Qwerty1!
