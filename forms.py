@@ -12,10 +12,10 @@ def containsOnlyLetters(field):
          return f" {field} must only contain letters. "
 
 def dateIsInThePast(field):
-    if field <= datetime.date.today():
+    if field <= datetime.date.today() and field >= datetime.date(2019,1,1):
         return True
     else:
-        return " Date must be in the past."
+        return " Date must be between 01/01/2019 and today. "
     
 def integerIsValid(field:int, min:int, max: int):
     if field >= min and field <=max:
@@ -89,7 +89,7 @@ def create_event_form(
 
     class event_form(FlaskForm):
             
-        name = StringField('Customer Name', default = nameValue, validators=[InputRequired(), Length(min=3, max=20)], render_kw={"placeholder": "TNF", "class":"form-control"})
+        name = StringField('Event Name', default = nameValue, validators=[InputRequired(), Length(min=2, max=20)], render_kw={"placeholder": "TNF", "class":"form-control"})
         location = StringField('Location', default = locationValue, validators=[InputRequired(), Length(min=2, max=20)], render_kw={"placeholder": "London", "class":"form-control"})
         dateStarted = DateField('Date Started', default = dateStartedValue, validators=[InputRequired()], render_kw={"class":"form-control"})
         durationMins = IntegerField('Event duration in mins (15-300)', default = durationMinsValue, validators=[InputRequired()], render_kw={"placeholder": "120", "class":"form-control"})
@@ -97,12 +97,10 @@ def create_event_form(
 
         def validate_on_submit(self):
             dateValidated = dateIsInThePast(self.dateStarted.data)
-            nameValidated = containsOnlyLetters(self.name.data)
             locationValidated = containsOnlyLetters(self.location.data)
             durationValidated = integerIsValid(self.durationMins.data, 15, 300)
             if (
                 dateValidated == True
-                and nameValidated == True
                 and locationValidated == True
                 and durationValidated == True
             ):
@@ -110,7 +108,6 @@ def create_event_form(
             else:
                 message = f"Input invalid:"
                 if dateValidated != True: message += dateValidated
-                if nameValidated != True: message += nameValidated
                 if locationValidated != True: message += locationValidated
                 if durationValidated != True: message += durationValidated
                 return message

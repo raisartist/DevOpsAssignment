@@ -47,6 +47,7 @@ def create_app():
     app.secret_key = "my super secret key for the app"
 
     login_manager.init_app(app)
+    login_manager.login_view = 'home'
     bcrypt.init_app(app)
 
     return app
@@ -92,6 +93,13 @@ def home():
     if current_user.is_authenticated:
         username = current_user.username
     return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = username)
+
+@app.route("/about")
+def about():
+    username = ""
+    if current_user.is_authenticated:
+        username = current_user.username
+    return render_template("about.html", isAuthenticated = current_user.is_authenticated, username = username)
 
 @app.route("/logout")
 def logout():
