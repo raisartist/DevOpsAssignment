@@ -26,7 +26,10 @@ def integerIsValid(field:int, min:int, max: int):
 def passwordIsValid(field:str):
     flag = True
     while True:
-        if not re.search("[a-z]", field):
+        if len(field) < 8 or len(field) > 20:
+            flag = False
+            break
+        elif not re.search("[a-z]", field):
             flag = False
             break
         elif not re.search("[A-Z]", field):
