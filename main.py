@@ -34,7 +34,7 @@ print ("Opened database successfully")
 
 conn.execute('CREATE TABLE IF NOT EXISTS customers (name VARCHAR PRIMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, dateJoined TEXT NOT NULL, useCase TEXT NOT NULL, location TEXT NOT NULL)')
 print ("Customers table created successfully");
-conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRUMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, location TEXT NOT NULL, dateStarted TEXT NOT NULL, durationMins INTEGER NOT NULL)')
+conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRIMARY KEY UNIQUE NOT NULL, author VARCHAR NOT NULL, location TEXT NOT NULL, dateStarted TEXT NOT NULL, durationMins INTEGER NOT NULL)')
 print ("Events table created successfully");
 conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, isAdmin VARCHAR NOT NULL)')
 print ("Users table created successfully");
@@ -155,7 +155,7 @@ def login_or_register():
                                 message = "Login unsuccessful: invalid username or password."
                         except Exception as error:
                             connection.rollback()
-                            message = f"Unexpected error line 143: {error}"
+                            message = f"Unexpected error: {error}"
 
                 else:
                     with sqlite3.connect("database.db") as connection:
@@ -195,31 +195,62 @@ def customers_database():
 
     return render_template("customers_database.html", rows = rows, form=form, currentUser = currentUser, isAdmin = isAdmin, isAuthenticated = current_user.is_authenticated)
 
+@login_required
+def authorise(table, name):
+    try: 
+        currentUser = current_user.username
+        with sqlite3.connect("database.db") as connection:
+            current = connection.cursor()
+            if table == "customers":
+                author = current.execute("SELECT author FROM customers WHERE name = (?)", (name,) )
+            elif table == "events":
+                author = current.execute("SELECT author FROM events WHERE name = (?)", (name,) )
+            author = current.fetchone()[0]
+            connection.commit()
+            
+            if currentUser == author:
+                return True
+            else:
+                return False
+    except Exception as error:
+        connection.rollback()
+        flash("Failed to authorise the request: " + error)
+    
 @app.route("/delete_customer/<customer_name>", methods = ['POST', 'GET'])
 @login_required
 def delete_customer(customer_name):
-    if request.method == 'POST':
-        try: 
-            with sqlite3.connect("database.db") as connection:
-                current = connection.cursor()
-                current.execute("DELETE FROM customers WHERE name = (?)",(customer_name,) )
-                
-                connection.commit()
-                message = "Customer record successfully deleted"
-        except Exception as error:
-            connection.rollback()
-            message = "Failed to delete a record. Please try again later."
-        
-        finally:
-            connection.close()
-            flash(message)
-            return redirect(url_for("customers_database"))
+    isAuthorised = authorise("customers", customer_name)
+    if isAuthorised:
+        if request.method == 'POST':
+            try: 
+                with sqlite3.connect("database.db") as connection:
+                    current = connection.cursor()
+                    current.execute("DELETE FROM customers WHERE name = (?)",(customer_name,) )
+                    
+                    connection.commit()
+                    message = "Customer record successfully deleted"
+            except Exception as error:
+                connection.rollback()
+                message = "Failed to delete a record. Please try again later."
+            
+            finally:
+                connection.close()
+                flash(message)
+                return redirect(url_for("customers_database"))
+    else:
+        flash("Action not authorised")
+        return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = current_user.username)
 
 @app.route("/update_customer/<name>/<dateJoined>/<location>/<useCase>")
 @login_required
 def update_customer(name, dateJoined, location, useCase):
-    form = create_customer_form(name, datetime.strptime(dateJoined,'%Y-%m-%d'), location, useCase)
-    return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase, form = form)
+    isAuthorised = authorise("customers", name)
+    if isAuthorised:
+        form = create_customer_form(name, datetime.strptime(dateJoined,'%Y-%m-%d'), location, useCase)
+        return render_template("update_customer.html", name = name, dateJoined = dateJoined, location = location, useCase = useCase, form = form)
+    else:
+        flash("Action not authorised")
+        return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = current_user.username)
 
 @app.route("/update_set_customer/<customer_name>", methods = ['POST', 'GET'])
 @login_required
@@ -331,8 +362,13 @@ def add_event():
 @app.route("/update_event/<name>/<dateStarted>/<location>/<durationMins>")
 @login_required
 def update_event(name, dateStarted, location, durationMins):
-    form = create_event_form(name, location, datetime.strptime(dateStarted,'%Y-%m-%d'), durationMins)
-    return render_template("update_event.html", name = name, dateStarted = dateStarted, location = location, durationMins = durationMins, form = form)
+    isAuthorised = authorise("events", name)
+    if isAuthorised:
+        form = create_event_form(name, location, datetime.strptime(dateStarted,'%Y-%m-%d'), durationMins)
+        return render_template("update_event.html", name = name, dateStarted = dateStarted, location = location, durationMins = durationMins, form = form)
+    else:
+        flash("Action not authorised")
+        return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = current_user.username)
 
 @app.route("/update_set_event/<event_name>", methods = ['POST', 'GET'])
 @login_required
@@ -367,22 +403,27 @@ def update_set_event(event_name):
 @app.route("/delete_event/<event_name>", methods = ['POST', 'GET'])
 @login_required
 def delete_event(event_name):
-    if request.method == 'POST':
-        try: 
-            with sqlite3.connect("database.db") as connection:
-                current = connection.cursor()
-                current.execute("DELETE FROM events WHERE name = (?)",(event_name,) )
-                
-                connection.commit()
-                message = "Event record successfully deleted"
-        except Exception as error:
-            connection.rollback()
-            message = f"Failed to delete an event record: {str(error)}"
-        
-        finally:
-            connection.close()
-            flash(message)
-            return redirect(url_for("events_database"))
+    isAuthorised = authorise("events", event_name)
+    if isAuthorised:
+        if request.method == 'POST':
+            try: 
+                with sqlite3.connect("database.db") as connection:
+                    current = connection.cursor()
+                    current.execute("DELETE FROM events WHERE name = (?)",(event_name,) )
+                    
+                    connection.commit()
+                    message = "Event record successfully deleted"
+            except Exception as error:
+                connection.rollback()
+                message = f"Failed to delete an event record: {str(error)}"
+            
+            finally:
+                connection.close()
+                flash(message)
+                return redirect(url_for("events_database"))
+    else:
+        flash("Action not authorised")
+        return render_template("home.html", isAuthenticated = current_user.is_authenticated, username = current_user.username) 
     
 if __name__ == "__main__":
     app.run(debug=True)
