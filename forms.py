@@ -4,7 +4,7 @@ from wtforms.validators import InputRequired, Length
 import datetime
 import sqlite3
 import re
-# import bleach
+import bleach
 
 def containsOnlyLetters(field):
      if field.isalpha():
@@ -125,10 +125,8 @@ class login_form(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class":"form-control"})
 
     def validate_on_submit(self):
-        # usernameValidated = containsOnlyLetters(bleach.clean(self.username.data))
-        # passwordValidated = passwordIsValid(bleach.clean(self.password.data))
-        usernameValidated = containsOnlyLetters(self.username.data)
-        passwordValidated = passwordIsValid(self.password.data)
+        usernameValidated = containsOnlyLetters(bleach.clean(self.username.data))
+        passwordValidated = passwordIsValid(bleach.clean(self.password.data))
         if (
             usernameValidated == True
             and passwordValidated == True
