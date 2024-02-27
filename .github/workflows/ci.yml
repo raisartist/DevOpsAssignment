@@ -24,6 +24,7 @@ jobs:
         pip install flask-wtf
         pip install -U WTForms
         pip install regex
+        pip install bleach
         pytest
 
     - name: Deploy to Render
