@@ -20,7 +20,7 @@ def addAdmin():
     finally:
         connection.close()
 
-conn = sqlite3.connect('database.db')
+conn = sqlite3.connect("database.db")
 print ("Opened database successfully")
 
 # Uncomment the block below to clean the tables:
@@ -38,6 +38,7 @@ conn.execute('CREATE TABLE IF NOT EXISTS events (name VARCHAR PRUMARY KEY UNIQUE
 print ("Events table created successfully");
 conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR UNIQUE NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, isAdmin VARCHAR NOT NULL)')
 print ("Users table created successfully");
+
 conn.close()
 
 addAdmin()
