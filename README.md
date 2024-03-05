@@ -1,9 +1,11 @@
 # QAAgileAssignment
-A web application for the QA L5 Software Engineering &amp; Agile module assignment prepared by Raisa Pastukhova. 
+A secure web application for the QA L6 Software Engineering and DevOps module assignment prepared by Raisa Pastukhova. 
 
 ### Hosted app link:
 
-`http://pastukhw.pythonanywhere.com/`
+The deployed application can be accessed via the link below:
+
+https://pastukhovadevopsassignment.onrender.com
 
 
 ### Testing
