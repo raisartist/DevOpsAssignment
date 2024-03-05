@@ -4,13 +4,18 @@ from wtforms.validators import InputRequired, Length
 import datetime
 import sqlite3
 import re
-import bleach
 
 def containsOnlyLetters(field):
      if field.isalpha():
          return True
      else:
          return f" {field} must only contain letters. "
+     
+def matchesEmailPattern(field):
+    if re.match("^[-\w\.]+@([-\w]+\.)+[\w-]{2,4}$", field):
+        return True
+    else:
+        return f" {field} does not match the email pattern. "
 
 def dateIsInThePast(field):
     if field <= datetime.date.today() and field >= datetime.date(2019,1,1):
@@ -30,26 +35,14 @@ def passwordIsValid(field:str):
         if len(field) < 8 or len(field) > 20:
             flag = False
             break
-        elif not re.search("[a-z]", field):
-            flag = False
-            break
-        elif not re.search("[A-Z]", field):
-            flag = False
-            break
-        elif not re.search("[0-9]", field):
-            flag = False
-            break
-        elif not re.search("[_@$!]" , field):
-            flag = False
-            break
-        elif re.search("\s" , field):
+        elif not re.match("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", field):
             flag = False
             break
         else:
             return flag
     
     if flag == False:
-        return f" Invalid password: password must be 8-20 characters long with no spaces and include at least one lower case letter, one upper case letter, one digit and one special character ('_', '@', '$', '!'). "
+        return f" Invalid password: password must be 8-20 characters long with no spaces and include at least one lower case letter, one upper case letter, one digit and one special character (#,?,!,@,$,%,^,&,*,-). "
 
 def create_customer_form(
     nameValue: str = '',
@@ -120,33 +113,55 @@ def create_event_form(
         
 
 class login_form(FlaskForm):
+    email = EmailField('Email', validators=[InputRequired()], render_kw={"placeholder": "myemail@gmail.com", "class":"form-control"})
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class":"form-control"})
+
+    def validate_on_submit(self):
+        passwordValidated = passwordIsValid(self.password.data)
+        emailValidated = matchesEmailPattern(self.email.data)
+        if passwordValidated == True and emailValidated == True:
+            return True
+        else:
+            message = f"Input invalid:"
+            if passwordValidated != True: message += passwordValidated
+            if emailValidated != True: message += emailValidated
+            
+            return message
+        
+class register_form(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=3, max=20)], render_kw={"placeholder": "myUsername", "class":"form-control"})
     email = EmailField('Email', validators=[InputRequired()], render_kw={"placeholder": "myemail@gmail.com", "class":"form-control"})
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=20)], render_kw={"class":"form-control"})
 
     def validate_on_submit(self):
-        usernameValidated = containsOnlyLetters(bleach.clean(self.username.data))
-        passwordValidated = passwordIsValid(bleach.clean(self.password.data))
+        usernameValidated = containsOnlyLetters(self.username.data)
+        passwordValidated = passwordIsValid(self.password.data)
+        emailValidated = matchesEmailPattern(self.email.data)
         if (
             usernameValidated == True
             and passwordValidated == True
+            and emailValidated == True
         ):
             return True
         else:
             message = f"Input invalid:"
             if usernameValidated != True: message += usernameValidated
             if passwordValidated != True: message += passwordValidated
+            if emailValidated != True: message += emailValidated
             
             return message
             
-    def email_registered(self):
+    def already_registered(self):
         conn = sqlite3.connect('database.db')
         curs = conn.cursor()
         curs.execute("SELECT email FROM users where email = (?)",[self.email.data])
-        valemail = curs.fetchone()
-        print("ValEmail from validation func: ", valemail)
-        if valemail is None:
-            return False
+        existingEmail = curs.fetchone()
+        curs.execute("SELECT username FROM users where username = (?)",[self.username.data])
+        existingName = curs.fetchone()
+        if existingEmail is not None:
+            return "This email is already registered."
+        elif existingName is not None:
+            return "This username is already registered."
         else:
-            return True
+            return False
         

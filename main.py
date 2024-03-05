@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, flash, url_for, redirect
 import sqlite3
-from forms import create_customer_form, create_event_form, login_form
+from forms import create_customer_form, create_event_form, login_form, register_form
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+import bleach
 
 login_manager = LoginManager()
 bcrypt = Bcrypt()
@@ -118,51 +119,77 @@ def login():
         flash(f"Already logged in as {current_user.username}", category = "info")
         return redirect(url_for("home"))
     form = login_form()
-    connection = sqlite3.connect("database.db")
-    connection.row_factory = sqlite3.Row
+ 
+    return render_template("login.html", form=form)
 
-    current = connection.cursor()
-    current.execute("select * from users")
+@app.route("/register")
+def register():
+    if current_user.is_authenticated:
+        flash(f"Already logged in as {current_user.username}", category = "info")
+        return redirect(url_for("home"))
+    form = register_form()
+ 
+    return render_template("register.html", form=form)
 
-    rows = current.fetchall(); 
-    return render_template("login.html", form=form, rows=rows)
-
-@app.route("/login_or_register", methods = ['POST', 'GET'])
-def login_or_register():
+@app.route("/register_action", methods = ['POST', 'GET'])
+def register_action():
+    form = register_form(request.form)
+    isValid = form.validate_on_submit()
+    isRegistered = form.already_registered()
+    if isValid == True:
+        if request.method == 'POST':
+                try:
+                    username = bleach.clean(form.username.data)
+                    email = bleach.clean(form.email.data)
+                    password = bleach.clean(form.password.data)
+                    passwordHash = bcrypt.generate_password_hash(password).decode("utf-8")
+                    with sqlite3.connect("database.db") as connection:
+                        if isRegistered is not False:
+                            message = isRegistered
+                        else:
+                            current = connection.cursor()
+                            current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
+                            connection.commit()
+                            message = (f"New user {username} is successfully registered.")
+                except Exception as error:
+                    connection.rollback()
+                    message = (f"email or username already exists. Please try other credentials or check your entries")
+                
+                finally:
+                    connection.close()
+                    flash(message)
+                    return redirect(url_for("home"))
+        else:
+            return redirect(url_for("home"))
+    else:
+        flash(f"{isValid}")
+        return redirect(url_for("home"))
+    
+@app.route("/login_action", methods = ['POST', 'GET'])
+def login_action():
     form = login_form(request.form)
     isValid = form.validate_on_submit()
-    isRegistered = form.email_registered()
     if isValid == True:
         if request.method == 'POST':
             try:
-                username = form.username.data
-                email = form.email.data
-                password = form.password.data
-                passwordHash = bcrypt.generate_password_hash(password).decode("utf-8")
-                if isRegistered == True:
-                    with sqlite3.connect("database.db") as connection:
-                        current = connection.cursor()
-                        current.execute("SELECT * from users where username = (?)",[username])
-                        userList = list(current.fetchone())
-                        try:
-                            user = load_user(userList[0])
-                            isValidPassword = bcrypt.check_password_hash(user.password, password)
-                            if email == user.email and isValidPassword:
-                                login_user(user, remember=True)
-                                message = f"Logged in successfully - Welcome back, {user.username}!"
-                            else:
-                                print(f"email: {email}, userEmail: {user.email}, pas: {isValidPassword}")
-                                message = "Login unsuccessful: invalid username or password."
-                        except Exception as error:
-                            connection.rollback()
-                            message = f"Unexpected error: {error}"
-
-                else:
-                    with sqlite3.connect("database.db") as connection:
-                        current = connection.cursor()
-                        current.execute("INSERT INTO users (username, email, password, isAdmin) VALUES (?,?,?,?)",(str(username),str(email),str(passwordHash),str(False)) )
-                        connection.commit()
-                        message = (f"New user {username} is successfully registered.")
+                email = bleach.clean(form.email.data)
+                password = bleach.clean(form.password.data)
+                with sqlite3.connect("database.db") as connection:
+                    current = connection.cursor()
+                    current.execute("SELECT * from users where email = (?)",[email])
+                    userList = list(current.fetchone())
+                    try:
+                        user = load_user(userList[0])
+                        isValidPassword = bcrypt.check_password_hash(user.password, password)
+                        if email == user.email and isValidPassword:
+                            login_user(user, remember=True)
+                            message = f"Logged in successfully - Welcome back, {user.username}!"
+                        else:
+                            message = "Login unsuccessful: invalid username or password."
+                    except Exception as error:
+                        connection.rollback()
+                        message = f"Unexpected error: {error}"
+                   
             except Exception as error:
                 connection.rollback()
                 message = (f"email or username already exist. Please try other credentials or check your entries")

@@ -29,9 +29,22 @@
 
 
     <div class="container-md bg-light-subtle border border-primary-subtle rounded-3 text-center position-absolute top-50 start-50 translate-middle">
-        <h3>Log In</h3>
+        <h3>Register</h3>
         <div class="form-control-lg">
-          <form class="form" action = "{{ url_for('login_action') }}" method = "POST">
+          <form class="form" action = "{{ url_for('register_action') }}" method = "POST">
+            <div class="form-group mx-sm-3 mb-2">
+                {{ form.username.label() }}
+                {% if form.username.errors %}
+                    {{ form.username() }}
+                    <div class="invalid-feedback">
+                    {% for error in form.username.errors %}
+                    <span>* {{ error }}</span>
+                    {% endfor %}
+                    </div>
+                {%else%}
+                    {{ form.username() }}
+                {% endif %}
+            </div>
             <div class="form-group mx-sm-3 mb-2">
                 {{ form.email.label() }}
                 {% if form.email.errors %}
