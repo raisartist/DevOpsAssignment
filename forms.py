@@ -15,7 +15,7 @@ def matchesEmailPattern(field):
     if re.match("^[-\w\.]+@([-\w]+\.)+[\w-]{2,4}$", field):
         return True
     else:
-        return f" {field} does not match the email pattern. "
+        return f" {field} is not a valid email. "
 
 def dateIsInThePast(field):
     if field <= datetime.date.today() and field >= datetime.date(2019,1,1):
@@ -35,7 +35,7 @@ def passwordIsValid(field:str):
         if len(field) < 8 or len(field) > 20:
             flag = False
             break
-        elif not re.match("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$", field):
+        elif not re.match("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,20}$", field):
             flag = False
             break
         else:

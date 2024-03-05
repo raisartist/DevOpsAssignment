@@ -1,5 +1,5 @@
 import datetime
-from forms import containsOnlyLetters, dateIsInThePast, integerIsValid, passwordIsValid
+from forms import containsOnlyLetters, dateIsInThePast, integerIsValid, passwordIsValid, matchesEmailPattern
 
 def test_contains_only_letters():
     valid_input = "OnlyLetters"
@@ -26,8 +26,15 @@ def test_integer_is_valid():
     
 def test_password_is_Valid():
     invalid_password = "0000"
-    valid_password = "ABab123_"
+    valid_password = "ABab123!?"
     
     assert passwordIsValid(valid_password) == True
-    assert passwordIsValid(invalid_password) == " Invalid password: password must be 8-20 characters long with no spaces and include at least one lower case letter, one upper case letter, one digit and one special character ('_', '@', '$', '!'). "
+    assert passwordIsValid(invalid_password) == " Invalid password: password must be 8-20 characters long with no spaces and include at least one lower case letter, one upper case letter, one digit and one special character (#,?,!,@,$,%,^,&,*,-). "
+    
+def test_matches_email_pattern():
+    valid_email = "test@test.com"
+    invalid_email = "test"
+    
+    assert matchesEmailPattern(valid_email) == True
+    assert matchesEmailPattern(invalid_email) == " test is not a valid email. "
     
