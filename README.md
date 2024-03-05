@@ -1,4 +1,4 @@
-# QAAgileAssignment
+# QADevOpsAssignment
 A secure web application for the QA L6 Software Engineering and DevOps module assignment prepared by Raisa Pastukhova. 
 
 ### Hosted app link:
