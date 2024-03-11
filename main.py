@@ -5,6 +5,7 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 import bleach
+import re
 
 login_manager = LoginManager()
 bcrypt = Bcrypt()
@@ -287,10 +288,10 @@ def update_set_customer(customer_name):
     if isValid == True:
         if request.method == 'POST':
             try:
-                name = bleach.clean(form.name.data)
+                name = re.sub('/', '', bleach.clean(form.name.data))
                 dateJoined = form.dateJoined.data
-                useCase = bleach.clean(form.useCase.data)
-                location = bleach.clean(form.location.data)
+                useCase = re.sub('/', '', bleach.clean(form.useCase.data))
+                location = re.sub('/', '', bleach.clean(form.location.data))
                 with sqlite3.connect("database.db") as connection:
                         current = connection.cursor()
                         current.execute("UPDATE customers SET name = (?), dateJoined = (?), useCase = (?), location = (?) WHERE name = (?)",(name, dateJoined, useCase, location, customer_name) )
@@ -317,10 +318,10 @@ def add_customer():
     if isValid == True:
         if request.method == 'POST':
             try:
-                name = bleach.clean(form.name.data)
+                name = re.sub('/', '', bleach.clean(form.name.data))
                 dateJoined = form.dateJoined.data
-                useCase = bleach.clean(form.useCase.data)
-                location = bleach.clean(form.location.data)
+                useCase = re.sub('/', '', bleach.clean(form.useCase.data))
+                location = re.sub('/', '', bleach.clean(form.location.data))
                 currentUser = current_user.username
                 with sqlite3.connect("database.db") as connection:
                     current = connection.cursor()
@@ -365,10 +366,10 @@ def add_event():
     if isValid == True:
         if request.method == 'POST':
             try:
-                name = bleach.clean(form.name.data)
+                name = re.sub('/', '', bleach.clean(form.name.data))
                 dateStarted= form.dateStarted.data
                 durationMins = form.durationMins.data
-                location = bleach.clean(form.location.data)
+                location = re.sub('/', '', bleach.clean(form.location.data))
                 with sqlite3.connect("database.db") as connection:
                     current = connection.cursor()
                     current.execute("INSERT OR IGNORE INTO events (name,author,dateStarted,durationMins,location) VALUES (?,?,?,?,?)",(str(name),str(currentUser),str(dateStarted),str(durationMins),str(location)) )
@@ -405,10 +406,10 @@ def update_set_event(event_name):
     if isValid == True:
         if request.method == 'POST':
             try:
-                name = bleach.clean(form.name.data)
+                name = re.sub('/', '', bleach.clean(form.name.data))
                 dateStarted = form.dateStarted.data
                 durationMins = form.durationMins.data
-                location = bleach.clean(form.location.data)
+                location = re.sub('/', '', bleach.clean(form.location.data))
                 with sqlite3.connect("database.db") as connection:
                         current = connection.cursor()
                         current.execute("UPDATE events SET name = (?), dateStarted = (?), durationMins = (?), location = (?) WHERE name = (?)",(name, dateStarted, durationMins, location, event_name) )
