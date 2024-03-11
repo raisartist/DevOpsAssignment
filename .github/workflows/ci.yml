@@ -25,7 +25,6 @@ jobs:
         pip install -U WTForms
         pip install regex
         pip install bleach
-        pip install re
         pytest
 
     - name: Deploy to Render
